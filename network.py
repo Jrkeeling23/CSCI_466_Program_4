@@ -2,6 +2,7 @@ import queue
 import threading
 import bs4
 
+
 ## wrapper class for a queue of packets
 class Interface:
     ## @param maxsize - the maximum size of the queue storing packets
@@ -140,11 +141,11 @@ class Router:
         # TODO: set up the routing table for connected hosts
 
         self.rt_tbl_D = {}
-        for dest in cost_D:
+        for dest in self.cost_D:
 
-            for interface, cost in cost_D[dest].items():
+            for interface, cost in self.cost_D[dest].items():
                 self.rt_tbl_D[dest] = {self.name: cost_D[dest][interface]}
-        print(self.rt_tbl_D)
+        print(self.rt_tbl_D,'\n')
 
         print('%s: Initialized routing table' % self)
         self.print_routes()
@@ -152,33 +153,58 @@ class Router:
     ## Print routing table
     def print_routes(self):
 
-        horizontal_edge = ''
-        for i in self.rt_tbl_D.keys():
-            for _ in range(len(self.rt_tbl_D)):
+        print('\n%s: sending packet' % (self))
 
-                horizontal_edge += "+===="
+        # edge
+        horizontal_edge = '+---'
+        for i in range(len(self.rt_tbl_D.keys())):
+            horizontal_edge += '+---'
+        horizontal_edge += '+'
         print(horizontal_edge)
 
-        destination = "| " + self.name + " |"
+        # for header
+        header = '|' + self.name + ' |'
+        for dest in self.rt_tbl_D.keys():
+            header += dest + ' |'
+        print(header)
+        print(horizontal_edge)
 
-        for i in self.rt_tbl_D.keys():
-            i += destination + " |  "
-        print(destination)
-
-        interior = ''
-        for key in self.rt_tbl_D.keys():
-            for _ in range(len(self.rt_tbl_D)+1):
-                interior += "+----"
-            interior += "\n| "
-            interior += key + " |  "
-            for _, items in self.rt_tbl_D.items():
-                if key in items:
-                    cost = items[key]
-                    interior +=str(cost) + " | "
-            interior += '\n'
+        # for current routers interior
+        current = True
+        if current is True:
+            interior = '|' + self.name + ' | '
+            for value in self.rt_tbl_D.values():
+                for y in value.values():
+                    interior += str(y) + ' | '
+            current = False
         print(interior)
         print(horizontal_edge)
 
+        # find known routers
+        known_routers = []
+        for dest in self.rt_tbl_D.keys():
+            if dest[0] is 'R':
+                known_routers.append(dest)
+
+        # find costs for unlinked router
+        cost = 0
+        array_of_costs = []
+        for value in self.rt_tbl_D.values():
+            for y in value.values():
+                cost += y
+                array_of_costs.append(cost)
+        array_of_costs.reverse()
+
+
+        # for other interiors
+        interior = '|'
+
+        for router in range(len(known_routers)):
+            interior += known_routers[router] + ' | '
+            for i in range(len(array_of_costs)):
+                interior += str(array_of_costs[i]) + ' | '
+            print(interior)
+            print(horizontal_edge, '\n')
     ## called when printing the object
     def __str__(self):
         return self.name
