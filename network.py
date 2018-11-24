@@ -139,13 +139,9 @@ class Router:
         # save neighbors and interfeces on which we connect to them
         self.cost_D = cost_D  # {neighbor: {interface: cost}}
         # TODO: set up the routing table for connected hosts
-
-        self.rt_tbl_D = {}
-        for dest in self.cost_D:
-
-            for interface, cost in self.cost_D[dest].items():
-                self.rt_tbl_D[dest] = {self.name: cost_D[dest][interface]}
-        print(self.rt_tbl_D,'\n')
+        # {destination: {router: cost}}
+        self.rt_tbl_D = {dest: {self.name: cost for key, cost in self.cost_D[dest].items()} for dest in self.cost_D}
+        self.rt_tbl_D[self.name] = {self.name: 0}
 
         print('%s: Initialized routing table' % self)
         self.print_routes()
@@ -155,56 +151,28 @@ class Router:
 
         print('\n%s: sending packet' % (self))
 
-        # edge
+        # for horizontal edges
         horizontal_edge = '+---'
         for i in range(len(self.rt_tbl_D.keys())):
             horizontal_edge += '+---'
         horizontal_edge += '+'
         print(horizontal_edge)
 
-        # for header
+        # for header (destinations)
         header = '|' + self.name + ' |'
         for dest in self.rt_tbl_D.keys():
             header += dest + ' |'
         print(header)
         print(horizontal_edge)
 
-        # for current routers interior
-        current = True
-        if current is True:
-            interior = '|' + self.name + ' | '
-            for value in self.rt_tbl_D.values():
-                for y in value.values():
-                    interior += str(y) + ' | '
-            current = False
-        print(interior)
-        print(horizontal_edge)
-
-        # find known routers
-        known_routers = []
-        for dest in self.rt_tbl_D.keys():
-            if dest[0] is 'R':
-                known_routers.append(dest)
-
-        # find costs for unlinked router
-        cost = 0
-        array_of_costs = []
+        # for routers costs at destinations
+        interior = '|' + self.name + ' | '
         for value in self.rt_tbl_D.values():
             for y in value.values():
-                cost += y
-                array_of_costs.append(cost)
-        array_of_costs.reverse()
+                interior += str(y) + ' | '
+        print(interior)
+        print(horizontal_edge, '\n')
 
-
-        # for other interiors
-        interior = '|'
-
-        for router in range(len(known_routers)):
-            interior += known_routers[router] + ' | '
-            for i in range(len(array_of_costs)):
-                interior += str(array_of_costs[i]) + ' | '
-            print(interior)
-            print(horizontal_edge, '\n')
     ## called when printing the object
     def __str__(self):
         return self.name
