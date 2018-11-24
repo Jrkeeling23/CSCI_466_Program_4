@@ -1,6 +1,6 @@
 import queue
 import threading
-import bs4
+import pickle
 
 
 ## wrapper class for a queue of packets
@@ -136,13 +136,14 @@ class Router:
         self.name = name
         # create a list of interfaces
         self.intf_L = [Interface(max_queue_size) for _ in range(len(cost_D))]
-        # save neighbors and interfeces on which we connect to them
+        # save neighbors and interfaces on which we connect to them
         self.cost_D = cost_D  # {neighbor: {interface: cost}}
         # TODO: set up the routing table for connected hosts
         # {destination: {router: cost}}
         self.rt_tbl_D = {dest: {self.name: cost for key, cost in self.cost_D[dest].items()} for dest in self.cost_D}
         self.rt_tbl_D[self.name] = {self.name: 0}
 
+        print("routing table in constructor: ", self.rt_tbl_D)
         print('%s: Initialized routing table' % self)
         self.print_routes()
 
@@ -213,8 +214,14 @@ class Router:
     # @param i Interface number on which to send out a routing update
     def send_routes(self, i):
         # TODO: Send out a routing table update
+        # string more message in packet
+        routing_table = ''
+        # iterate through dictionary for router, neighbor and cost
+        for k,v in self.rt_tbl_D.items():
+            for neighbor,cost in v.items():
+                routing_table += k + neighbor + str(cost)
         # create a routing table update packet
-        p = NetworkPacket(0, 'control', 'DUMMY_ROUTING_TABLE')
+        p = NetworkPacket(0, 'control', routing_table)
         try:
             print('%s: sending routing update "%s" from interface %d' % (self, p, i))
             self.intf_L[i].put(p.to_byte_S(), 'out', True)
