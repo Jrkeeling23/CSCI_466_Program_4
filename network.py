@@ -1,6 +1,5 @@
 import queue
 import threading
-import pickle
 
 
 ## wrapper class for a queue of packets
@@ -215,11 +214,12 @@ class Router:
     def send_routes(self, i):
         # TODO: Send out a routing table update
         # string more message in packet
-        routing_table = ''
+        routing_table = self.name
         # iterate through dictionary for router, neighbor and cost
         for k,v in self.rt_tbl_D.items():
             for neighbor,cost in v.items():
                 routing_table += k + neighbor + str(cost)
+                print(k, neighbor,cost)
         # create a routing table update packet
         p = NetworkPacket(0, 'control', routing_table)
         try:
@@ -234,6 +234,15 @@ class Router:
     def update_routes(self, p, i):
         # TODO: add logic to update the routing tables and
         # possibly send out routing updates
+        router_packet = str(p)
+        # packet up to message
+        network_packet_length = NetworkPacket.prot_S_length + NetworkPacket.dst_S_length
+        # network packet length
+        network_packet_length2 = network_packet_length + 2
+        source_router = router_packet[network_packet_length : network_packet_length2]
+        print(source_router)
+
+
         print('%s: Received routing update %s from interface %d' % (self, p, i))
 
     ## thread target for the host to keep forwarding data
