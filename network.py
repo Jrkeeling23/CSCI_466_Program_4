@@ -216,10 +216,10 @@ class Router:
         # string more message in packet
         routing_table = self.name
         # iterate through dictionary for router, neighbor and cost
-        for k,v in self.rt_tbl_D.items():
-            for neighbor,cost in v.items():
+        for k, v in self.rt_tbl_D.items():
+            for neighbor, cost in v.items():
                 routing_table += k + neighbor + str(cost)
-                print(k, neighbor,cost)
+                print(k, neighbor, cost)
         # create a routing table update packet
         p = NetworkPacket(0, 'control', routing_table)
         try:
@@ -235,12 +235,50 @@ class Router:
         # TODO: add logic to update the routing tables and
         # possibly send out routing updates
         router_packet = str(p)
-        # packet up to message
+        # packet length up to message
         network_packet_length = NetworkPacket.prot_S_length + NetworkPacket.dst_S_length
-        # network packet length
+        # network packet length including source router
         network_packet_length2 = network_packet_length + 2
-        source_router = router_packet[network_packet_length : network_packet_length2]
-        print(source_router)
+        message = router_packet[network_packet_length:]
+        source_router = router_packet[network_packet_length: network_packet_length2]
+        print('\nUpdating: ', self.name)
+        print('Message : ', message)
+        print('Source Router : ', source_router)
+
+        # sources = []
+        # destinations = []
+        # costs = []
+        s = None
+        c = None
+        d = None
+        routing_table = {}
+        i = 2
+        while i < (len(message)):
+            temp = {}
+            # for destination
+            if (i + 1) < len(message):
+                # destinations.append((message[i] + message[i + 1]))
+                d = (message[i] + message[i + 1])
+                i = i + 2
+
+            # for source
+            if (i < len(message)) and ((i + 1) < len(message)):
+                # sources.append((message[i] + message[i + 1]))
+                s = (message[i] + message[i + 1])
+                i = i + 2
+
+            # for costs
+            if (i < len(message)):
+                # costs.append(message[i])
+                c = message[i]
+                i = i + 1
+
+            # create routing table of which it came from
+            temp[s] = c
+            routing_table[d] = temp
+
+        print('routing_table: ', routing_table)
+        print('temp:', temp)
 
 
         print('%s: Received routing update %s from interface %d' % (self, p, i))
