@@ -156,38 +156,6 @@ class Router:
     ## Print routing table
     def print_routes(self):
 
-        print("\n%s: routing table\t\tFrom" % self)
-        sort_table = OrderedDict(sorted(self.total_rt.items()))
-        temp = 1
-        for x, y in sort_table.items():
-            if temp == 1:
-                print("\t\t", str(x), end='')
-                temp += 1
-            else:
-                print("\t", str(x), end='')
-        print()
-        interfaces = []
-        for x, y in sort_table.items():
-            for link, cost in y.items():
-                if not link in interfaces:
-                    interfaces.append(link)
-        interfaces = sorted(interfaces)
-        for interface in interfaces:
-            if interfaces.index(interface) == 0:
-                print("Cost \t ", str(interface), "\t", end='')
-            else:
-                print("\t ", str(interface),"\t", end='')
-            for x, y in sort_table.items():
-                if not interface in y.keys():
-                    print("~\t", end='')
-                else:
-                    for link, cost in y.items():
-                        if link == interface:
-                            print(str(cost), "\t", end='')
-            print("\n")
-        print("\n")
-
-        """
         print('\n%s: sending packet' % (self))
 
         # for horizontal edges
@@ -210,7 +178,7 @@ class Router:
             for y in value.values():
                 interior += str(y) + ' | '
         print(interior)
-        print(horizontal_edge, '\n')"""
+        print(horizontal_edge, '\n')
 
     ## called when printing the object
     def __str__(self):

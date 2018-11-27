@@ -38,7 +38,7 @@ if __name__ == '__main__':
                                 max_queue_size=router_queue_size)
     object_L.append(router_c)
 
-    cost_D = {'RB': {0: 3}, 'RC': {1: 3}, 'H3': {2:3}}  # {neighbor: {interface: cost}}
+    cost_D = {'RB': {0: 3}, 'RC': {1: 4}, 'H3': {2:3}}  # {neighbor: {interface: cost}}
     router_d = network_3.Router(name='RD',
                                 cost_D=cost_D,
                                 max_queue_size=router_queue_size)
