@@ -237,7 +237,7 @@ class Router:
         updated = False
         # we decode the packet
         table = p.data_S.split("//")
-        table_name = table[0]
+        name_table = table[0]
         routes = table[1].split("/")
         # Splits up the info of a route
         for route in routes:
@@ -245,48 +245,48 @@ class Router:
                 node = route.split("-")
 
             # Adds to global table
-            self.total_rt[table_name][node[0]] = [int(node[2])]
+            self.total_rt[name_table][node[0]] = [int(node[2])]
 
             # Check if node is current router, if so, set distance & skip
             if node[0] == self.name:
 
                 # Grabs the interface of the neighbor
-                interface = list(self.cost_D[table_name].keys())
+                inf =  list(self.cost_D[name_table].keys())
 
                 # Distance of the new node to neighbor and distance from neighbor to node
-                self.rt_tbl_D[node[0]] = {int(interface[0]): 0}
+                self.rt_tbl_D[node[0]] = {int(inf[0]): 0}
 
                 # Adds to global table
-                self.total_rt[self.name[0]] = [0]
+                self.total_rt[self.name][node[0]] = [0]
 
                 continue
 
             # Checks if the node is not already in the table or not a neighbor
-            if node[0] not in self.cost_D and node[0] not in self.rt_tbl_D:
+            if node[0] not in self.cost_D and  node[0] not in self.rt_tbl_D:
 
                 # Grabs the distance of the neighbor
-                neighbor_distance = list(self.cost_D[table_name].values())
+                n = list(self.cost_D[name_table].values())
                 # Grabs the interface of the neighbor
-                interface = list(self.cost_D[table_name].keys())
+                inf = list(self.cost_D[name_table].keys())
                 # Distance to new node
-                self.rt_tbl_D[node[0]] = {int(interface[0]):int(node[2]) + neighbor_distance[0]}
+                self.rt_tbl_D[node[0]] = {int(inf[0]):int(node[2]) + n[0]}
                 # Adds to global table
-                self.total_rt[self.name][node[0]] = [int(node[2]) + neighbor_distance[0]]
+                self.total_rt[self.name][node[0]] = [int(node[2]) + n[0]]
                 # We have now updated the list
                 updated = True
 
-            elif node[0] not in self.cost_D and node[0] in self.rt_tbl_D:
+            elif node[0] not in self.cost_D and  node[0] in self.rt_tbl_D:
                 # Grabs the distance of the neighbor
-                neighbor_distance = list(self.cost_D[table_name].values())
+                n = list(self.cost_D[name_table].values())
                 # Gets the interface of that neighbor
-                interface = list(self.cost_D[table_name].keys())
+                inf = list(self.cost_D[name_table].keys())
                 # Gets the current distance
-                current_distance = list(self.rt_tbl_D[node[0]].values())
+                curr = list(self.rt_tbl_D[node[0]].values())
                 # Checks if the current distance is greater than the new distance
-                if current_distance[0] > int(node[2]):
-                    self.rt_tbl_D[node[0]] = {int(interface[0]):int(node[2]) + neighbor_distance[0]}
+                if curr[0] > int(n[0]) + int(node[2]):
+                    self.rt_tbl_D[node[0]] = {int(inf[0]):int(node[2]) + n[0]}
                     # Adds to global table
-                    self.total_rt[self.name][node[0]] = [int(node[2]) + neighbor_distance[0]]
+                    self.total_rt[self.name][node[0]] = [int(node[2]) + n[0]]
 
                     # List has been updated
                     updated = True
@@ -294,20 +294,11 @@ class Router:
         # Notifies neighbor's if we have updated
         if updated:
             for neighbor_name, neighbor_info in self.cost_D.items():
-                for interface, cost in neighbor_info.items():
+                for interface,cost in neighbor_info.items():
                     # Checks if the neighbor is a host
                     if 'H' not in neighbor_name:
                         self.send_routes(interface)
 
-        """router_packet = str(p)
-        # packet up to message
-        network_packet_length = NetworkPacket.prot_S_length + NetworkPacket.dst_S_length
-        # network packet length
-        network_packet_length2 = network_packet_length + 2
-        source_router = router_packet[network_packet_length : network_packet_length2]
-        print(source_router)
-        print('%s: Received routing update %s from interface %d' % (self, p, i))
-        """
 
     ## thread target for the host to keep forwarding data
     def run(self):
