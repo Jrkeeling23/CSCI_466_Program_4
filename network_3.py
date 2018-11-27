@@ -256,7 +256,6 @@ class Router:
                 # Encodes the string so we can separate route
                 # from neighbor and cost, and distinguish routes with a slash
                 routing_table += str(k) + "-" + str(neighbor) + "-" + str(cost) + "/"
-                print(k, neighbor, cost)
         # create a routing table update packet
         p = NetworkPacket(0, 'control', routing_table)
         try:
@@ -334,6 +333,9 @@ class Router:
                     # Checks if the neighbor is a host
                     if 'H' not in neighbor_name:
                         self.send_routes(interface)
+
+        print('going to print routes\n rt_tbl_D: ', self.rt_tbl_D)
+        self.print_routes()
 
         """router_packet = str(p)
         # packet up to message
