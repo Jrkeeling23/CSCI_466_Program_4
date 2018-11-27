@@ -135,43 +135,17 @@ class Router:
         self.name = name
         # create a list of interfaces
         self.intf_L = [Interface(max_queue_size) for _ in range(len(cost_D))]
-        # save neighbors and interfaces on which we connect to them
+        # save neighbors and interfeces on which we connect to them
         self.cost_D = cost_D  # {neighbor: {interface: cost}}
         # TODO: set up the routing table for connected hosts
-        # {destination: {router: cost}}
-        self.rt_tbl_D = {dest: {self.name: cost for key, cost in self.cost_D[dest].items()} for dest in self.cost_D}
-        self.rt_tbl_D[self.name] = {self.name: 0}
-
-        print("routing table in constructor: ", self.rt_tbl_D)
+        self.rt_tbl_D = {}  # {destination: {router: cost}}
         print('%s: Initialized routing table' % self)
         self.print_routes()
 
     ## Print routing table
     def print_routes(self):
-
-        print('\n%s: sending packet' % (self))
-
-        # for horizontal edges
-        horizontal_edge = '+---'
-        for i in range(len(self.rt_tbl_D.keys())):
-            horizontal_edge += '+---'
-        horizontal_edge += '+'
-        print(horizontal_edge)
-
-        # for header (destinations)
-        header = '|' + self.name + ' |'
-        for dest in self.rt_tbl_D.keys():
-            header += dest + ' |'
-        print(header)
-        print(horizontal_edge)
-
-        # for routers costs at destinations
-        interior = '|' + self.name + ' | '
-        for value in self.rt_tbl_D.values():
-            for y in value.values():
-                interior += str(y) + ' | '
-        print(interior)
-        print(horizontal_edge, '\n')
+        # TODO: print the routes as a two dimensional table
+        print(self.rt_tbl_D)
 
     ## called when printing the object
     def __str__(self):
@@ -213,15 +187,8 @@ class Router:
     # @param i Interface number on which to send out a routing update
     def send_routes(self, i):
         # TODO: Send out a routing table update
-        # string more message in packet
-        routing_table = self.name
-        # iterate through dictionary for router, neighbor and cost
-        for k, v in self.rt_tbl_D.items():
-            for neighbor, cost in v.items():
-                routing_table += k + neighbor + str(cost)
-                print(k, neighbor, cost)
         # create a routing table update packet
-        p = NetworkPacket(0, 'control', routing_table)
+        p = NetworkPacket(0, 'control', 'DUMMY_ROUTING_TABLE')
         try:
             print('%s: sending routing update "%s" from interface %d' % (self, p, i))
             self.intf_L[i].put(p.to_byte_S(), 'out', True)
@@ -234,53 +201,6 @@ class Router:
     def update_routes(self, p, i):
         # TODO: add logic to update the routing tables and
         # possibly send out routing updates
-        router_packet = str(p)
-        # packet length up to message
-        network_packet_length = NetworkPacket.prot_S_length + NetworkPacket.dst_S_length
-        # network packet length including source router
-        network_packet_length2 = network_packet_length + 2
-        message = router_packet[network_packet_length:]
-        source_router = router_packet[network_packet_length: network_packet_length2]
-        print('\nUpdating: ', self.name)
-        print('Message : ', message)
-        print('Source Router : ', source_router)
-
-        # sources = []
-        # destinations = []
-        # costs = []
-        s = None
-        c = None
-        d = None
-        routing_table = {}
-        i = 2
-        while i < (len(message)):
-            temp = {}
-            # for destination
-            if (i + 1) < len(message):
-                # destinations.append((message[i] + message[i + 1]))
-                d = (message[i] + message[i + 1])
-                i = i + 2
-
-            # for source
-            if (i < len(message)) and ((i + 1) < len(message)):
-                # sources.append((message[i] + message[i + 1]))
-                s = (message[i] + message[i + 1])
-                i = i + 2
-
-            # for costs
-            if (i < len(message)):
-                # costs.append(message[i])
-                c = message[i]
-                i = i + 1
-
-            # create routing table of which it came from
-            temp[s] = c
-            routing_table[d] = temp
-
-        print('routing_table: ', routing_table)
-        print('temp:', temp)
-
-
         print('%s: Received routing update %s from interface %d' % (self, p, i))
 
     ## thread target for the host to keep forwarding data
@@ -290,4 +210,4 @@ class Router:
             self.process_queues()
             if self.stop:
                 print(threading.currentThread().getName() + ': Ending')
-                return
+                return 
